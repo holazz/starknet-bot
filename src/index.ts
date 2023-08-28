@@ -1,32 +1,56 @@
 import c from 'picocolors'
 import prompts from 'prompts'
 import { Account } from 'starknet'
-import { estimateGasFee, getProvider, shortenAddress } from './utils'
-import { wallets as rawWallets } from './config'
+import { estimateGasFee, generateWalletTitle, getProvider } from './utils'
+import { resolvedWallets } from './config'
 import modules from './modules'
 import type { Call, Provider } from 'starknet'
 import type { Wallet } from './types'
 
 async function getConfig() {
-  const { project } = (await prompts({
-    type: 'select',
-    name: 'project',
-    message: '请选择交互的项目',
-    choices: modules,
-  })) as { project: string }
+  const input = process.argv.slice(2)
 
-  const { wallets } = (await prompts({
-    type: 'multiselect',
-    name: 'wallets',
-    message: '请选择交互的钱包',
-    choices: rawWallets.map((wallet, index) => ({
-      title: `${wallet.label || `Account ${index + 1}`} ${c.dim(
-        `(${shortenAddress(wallet.address)})`
-      )}`,
-      value: wallet,
-    })),
-    instructions: false,
-  })) as { wallets: Wallet[] }
+  let project = modules.find((m) => m.value === input[0])?.value
+
+  if (project) {
+    console.log(
+      `${c.green('✔')} ${c.bold('请选择交互的项目')} ${c.dim('›')} ${c.bold(
+        modules.find((m) => m.value === input[0])?.title
+      )}`
+    )
+  } else {
+    const { project: p } = await prompts({
+      type: 'select',
+      name: 'project',
+      message: '请选择交互的项目',
+      choices: modules,
+    })
+    project = p
+  }
+
+  let wallets = resolvedWallets.filter((w) =>
+    input[1]?.split(',').includes(w.address)
+  )
+
+  if (wallets.length) {
+    console.log(
+      `${c.green('✔')} ${c.bold('请选择交互交互的钱包')} ${c.dim('›')} ${c.bold(
+        wallets.map((w) => generateWalletTitle(w.address)).join(', ')
+      )}`
+    )
+  } else {
+    const { wallets: w } = await prompts({
+      type: 'multiselect',
+      name: 'wallets',
+      message: '请选择交互的钱包',
+      choices: resolvedWallets.map((wallet) => ({
+        title: generateWalletTitle(wallet.address),
+        value: wallet,
+      })),
+      instructions: false,
+    })
+    wallets = w
+  }
 
   return { project, wallets }
 }
@@ -38,7 +62,7 @@ async function beforeSubmitTransaction(
 ) {
   const account = new Account(provider, wallet.address, wallet.privateKey)
   const fee = await estimateGasFee(account, calls)
-  if (process.env.TRANSCATION_CONFIRM === 'true') {
+  if (process.env.TRANSACTION_CONFIRM === 'true') {
     const { value } = await prompts({
       type: 'confirm',
       name: 'value',
@@ -54,40 +78,34 @@ async function beforeSubmitTransaction(
 async function run() {
   const { project, wallets } = await getConfig()
   const provider = getProvider()
-  const callMethod = modules.find((m) => m.value === project)!.call
+  const module = modules.find((m) => m.value === project)!
 
   const isSubmit = await beforeSubmitTransaction(
     provider,
     wallets[0],
-    callMethod(wallets[0])
+    await module.calls(wallets[0].address)
   )
 
   if (!isSubmit) return
 
-  const promises = wallets.map(async (wallet, index) => {
+  const promises = wallets.map(async (wallet) => {
     const account = new Account(provider, wallet.address, wallet.privateKey)
-    const nonce = await account.getNonce()
-    const res = await account.execute(callMethod(wallet))
-    return {
-      address: `${wallet.label || `Account ${index + 1}`} ${c.dim(
-        `(${shortenAddress(wallet.address)})`
-      )}`,
-      nonce: Number(nonce),
-      tx: `${
-        process.env.NETWORK === 'mainnet'
-          ? 'https://starkscan.co/tx/'
-          : 'https://testnet.starkscan.co/tx/'
-      }${res.transaction_hash}`,
-    }
+    return module.sendTransaction(account)
   })
 
   const res = await Promise.all(promises)
 
-  res.forEach((r) => {
+  res.flat().forEach((r) => {
     console.log(
       `\n${c.bold(r.address)}\n${c.bold('Nonce: ')}${c.yellow(
         r.nonce.toString()
-      )}\n${c.bold('Transaction: ')}${c.green(r.tx)}\n`
+      )}\n${c.bold('Transaction: ')}${c.green(
+        `${
+          process.env.NETWORK === 'mainnet'
+            ? 'https://starkscan.co/tx/'
+            : 'https://testnet.starkscan.co/tx/'
+        }${r.tx}`
+      )}\n`
     )
   })
 }

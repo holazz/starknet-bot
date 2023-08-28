@@ -1,5 +1,7 @@
 import 'dotenv/config'
 import { Provider as StarknetProvider, constants } from 'starknet'
+import c from 'picocolors'
+import { resolvedWallets } from '../config'
 import { getETHPrice } from '../api'
 import type { Account, Call } from 'starknet'
 
@@ -22,12 +24,27 @@ export async function estimateGasFee(account: Account, calls: Call | Call[]) {
   return Number(((Number(fee.overall_fee) / 1e18) * ethPrice).toFixed(2))
 }
 
+export async function sendTransaction(account: Account, calls: Call | Call[]) {
+  const nonce = await account.getNonce()
+  const res = await account.execute(calls)
+  return {
+    address: generateWalletTitle(account.address),
+    nonce: Number(nonce),
+    tx: res.transaction_hash,
+  }
+}
+
 export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 export function shortenAddress(address: string) {
   return `${address.slice(0, 6)}...${address.slice(-4)}`
+}
+
+export function generateWalletTitle(address: string) {
+  const wallet = resolvedWallets.find((w) => w.address === address)!
+  return `${wallet.label} ${c.dim(`(${shortenAddress(wallet.address)})`)}`
 }
 
 export function retry<T>(

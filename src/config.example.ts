@@ -7,3 +7,8 @@ export const wallets: Wallet[] = [
     label: '', // 备注（可选）
   },
 ]
+
+export const resolvedWallets: Wallet[] = wallets.map((wallet, index) => ({
+  label: `Account ${index + 1}`,
+  ...wallet,
+}))
