@@ -24,7 +24,7 @@ export async function getNFTs(address: string): Promise<NFTInfo[]> {
   return res.data.data
 }
 
-export async function waitTransactionReceipt(txHash: string) {
+export async function waitForTransactionReceipt(txHash: string) {
   const res = await axios.get(
     'https://alpha-mainnet.starknet.io/feeder_gateway/get_transaction_receipt',
     {
