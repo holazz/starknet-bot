@@ -4,7 +4,6 @@ export const wallets: Wallet[] = [
   {
     privateKey: '', // 私钥
     address: '', // 地址
-    label: '', // 备注（可选）
   },
 ]
 

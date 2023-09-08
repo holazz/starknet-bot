@@ -94,7 +94,9 @@ async function beforeSubmitTransaction(filteredData: [Data, string][]) {
   res.forEach((r) => {
     message += `\n${c.bold(generateWalletTitle(r.address))} ${c.dim(
       '›'
-    )} ${c.bold(r.project)} ${c.dim('›')} ${c.yellow(`$${r.fee}`)}`
+    )} ${c.bold(r.project)} ${c.dim(
+      `(${modules.find((m) => m.value === r.project)?.description})`
+    )} ${c.dim('›')} ${c.yellow(`$${r.fee}`)}`
   })
   message += `\n\n${c.bold('预估手续费合计:')} ${c.yellow(
     `$${res.reduce((acc, cur) => acc + cur.fee, 0).toFixed(2)}`
@@ -156,6 +158,7 @@ export async function run() {
   })
 
   const records = updateRecords(data, filteredData)
-  const csv = await json2csv(records)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const csv = await json2csv(records.map(({ privateKey, ...rest }) => rest))
   await fsp.writeFile('records.csv', csv)
 }

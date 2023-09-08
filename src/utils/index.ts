@@ -38,6 +38,10 @@ export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+export function randomPick(source: any[]) {
+  return source[Math.floor(Math.random() * source.length)]
+}
+
 export function shortenAddress(address: string) {
   return `${address.slice(0, 6)}...${address.slice(-4)}`
 }
