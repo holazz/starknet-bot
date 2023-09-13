@@ -5,20 +5,20 @@ import type { Account } from 'starknet'
 function getCalls() {
   return {
     contractAddress:
-      '0x07d4dc2bf13ede97b9e458dc401d4ff6dd386a02049de879ebe637af8299f91d',
+      '0x012f8e318fe04a1fe8bffe005ea4bbd19cb77a656b4f42682aab8a0ed20702f0',
     entrypoint: 'setApprovalForAll',
     calldata: CallData.compile({
       operator:
-        '0x7d4dc2bf13ede97b9e458dc401d4ff6dd386a02049de879ebe637af8299f91d',
+        '0x012f8e318fe04a1fe8bffe005ea4bbd19cb77a656b4f42682aab8a0ed20702f0',
       approved: 0,
     }),
   }
 }
 
 export default {
-  title: 'Almanac NFT',
+  title: 'StarkRocks NFT',
   description: '授权 NFT',
-  value: 'almanacNFT',
+  value: 'starkRocks',
   calls: getCalls,
   sendTransaction: (account: Account) => sendTransaction(account, getCalls()),
 }

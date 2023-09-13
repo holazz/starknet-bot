@@ -54,8 +54,10 @@ function processData(data: Data) {
 async function filterData(data: Data[]) {
   let filteredData: Data[] = []
 
-  if (data.length <= 2) {
+  if (data.length - 2 < Number(process.env.ACCOUNT)) {
     filteredData = data
+      .sort(() => Math.random() - 0.5)
+      .slice(0, Number(process.env.ACCOUNT))
   } else {
     const getRandomEdge = (type: 'max' | 'min') => {
       const count = Math[type](...data.map((d) => d.total))

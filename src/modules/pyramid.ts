@@ -5,20 +5,18 @@ import type { Account } from 'starknet'
 function getCalls() {
   return {
     contractAddress:
-      '0x07d4dc2bf13ede97b9e458dc401d4ff6dd386a02049de879ebe637af8299f91d',
-    entrypoint: 'setApprovalForAll',
+      '0x0364847c4f39b869760a8b213186b5b553127e9420e594075d13d1ce8a1d9157',
+    entrypoint: 'cancelMakerOrder',
     calldata: CallData.compile({
-      operator:
-        '0x7d4dc2bf13ede97b9e458dc401d4ff6dd386a02049de879ebe637af8299f91d',
-      approved: 0,
+      orderNonce: 0,
     }),
   }
 }
 
 export default {
-  title: 'Almanac NFT',
-  description: '授权 NFT',
-  value: 'almanacNFT',
+  title: 'Pyramid NFT Marketplace',
+  description: '在 Pyramid NFT Marketplace 下架 NFT',
+  value: 'pyramid',
   calls: getCalls,
   sendTransaction: (account: Account) => sendTransaction(account, getCalls()),
 }

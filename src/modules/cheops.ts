@@ -5,20 +5,20 @@ import type { Account } from 'starknet'
 function getCalls() {
   return {
     contractAddress:
-      '0x07d4dc2bf13ede97b9e458dc401d4ff6dd386a02049de879ebe637af8299f91d',
+      '0x048e95d3d7b12348819fa28dc43bcdf50f9774dabd4f5b622c4a25a0b7c30c45',
     entrypoint: 'setApprovalForAll',
     calldata: CallData.compile({
       operator:
-        '0x7d4dc2bf13ede97b9e458dc401d4ff6dd386a02049de879ebe637af8299f91d',
+        '0x048e95d3d7b12348819fa28dc43bcdf50f9774dabd4f5b622c4a25a0b7c30c45',
       approved: 0,
     }),
   }
 }
 
 export default {
-  title: 'Almanac NFT',
+  title: 'Cheops NFT',
   description: '授权 NFT',
-  value: 'almanacNFT',
+  value: 'cheops',
   calls: getCalls,
   sendTransaction: (account: Account) => sendTransaction(account, getCalls()),
 }
