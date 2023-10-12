@@ -1,7 +1,12 @@
 import c from 'picocolors'
 import prompts from 'prompts'
 import { Account } from 'starknet'
-import { estimateGasFee, generateWalletTitle, getProvider } from '../utils'
+import {
+  estimateGasFee,
+  generateWalletTitle,
+  getLatestTransactionAge,
+  getProvider,
+} from '../utils'
 import { resolvedWallets } from '../config'
 import modules from '../modules'
 import type { Call, Provider } from 'starknet'
@@ -39,14 +44,20 @@ async function getConfig() {
       )}`
     )
   } else {
+    const choices = await Promise.all(
+      resolvedWallets.map(async (wallet) => {
+        const age = await getLatestTransactionAge(wallet.address)
+        return {
+          title: `${generateWalletTitle(wallet.address)} ${age}`,
+          value: wallet,
+        }
+      })
+    )
     const { wallets: w } = await prompts({
       type: 'multiselect',
       name: 'wallets',
       message: '请选择交互的钱包',
-      choices: resolvedWallets.map((wallet) => ({
-        title: generateWalletTitle(wallet.address),
-        value: wallet,
-      })),
+      choices,
       instructions: false,
     })
     wallets = w
@@ -97,9 +108,9 @@ export async function run() {
 
   res.flat().forEach((r) => {
     console.log(
-      `\n${c.bold(r.address)}\n${c.bold('Nonce: ')}${c.yellow(
-        r.nonce.toString()
-      )}\n${c.bold('Transaction: ')}${c.green(
+      `\n${c.bold(generateWalletTitle(r.address))}\n${c.bold(
+        'Nonce: '
+      )}${c.yellow(r.nonce.toString())}\n${c.bold('Transaction: ')}${c.green(
         `${
           process.env.NETWORK === 'mainnet'
             ? 'https://starkscan.co/tx/'

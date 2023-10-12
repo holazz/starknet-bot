@@ -42,4 +42,4 @@ export default [
   carmine,
   realms,
   theNinth,
-]
+].sort((a, b) => a.value.localeCompare(b.value))

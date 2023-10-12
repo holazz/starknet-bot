@@ -4,7 +4,12 @@ import c from 'picocolors'
 import prompts from 'prompts'
 import { Account } from 'starknet'
 import { csv2json, json2csv } from 'json-2-csv'
-import { estimateGasFee, generateWalletTitle, getProvider } from '../utils'
+import {
+  estimateGasFee,
+  generateWalletTitle,
+  getLatestTransactionAge,
+  getProvider,
+} from '../utils'
 import { resolvedWallets } from '../config'
 import modules from '../modules'
 import type { Wallet } from '../types'
@@ -84,10 +89,13 @@ async function beforeSubmitTransaction(filteredData: [Data, string][]) {
     const module = modules.find((m) => m.value === project)!
     const calls = await module.calls(data.address)
     const fee = await estimateGasFee(account, calls)
+    const age = await getLatestTransactionAge(data.address)
+
     return {
       address: data.address,
       project,
       fee,
+      age,
       sendTransaction: () => module.sendTransaction(account),
     }
   })
@@ -98,7 +106,7 @@ async function beforeSubmitTransaction(filteredData: [Data, string][]) {
       '›'
     )} ${c.bold(r.project)} ${c.dim(
       `(${modules.find((m) => m.value === r.project)?.description})`
-    )} ${c.dim('›')} ${c.yellow(`$${r.fee}`)}`
+    )} ${c.dim('›')} ${c.yellow(`$${r.fee}`)} ${c.dim('›')} ${r.age}`
   })
   message += `\n\n${c.bold('预估手续费合计:')} ${c.yellow(
     `$${res.reduce((acc, cur) => acc + cur.fee, 0).toFixed(2)}`
@@ -147,9 +155,9 @@ export async function run() {
 
   res.flat().forEach((r) => {
     console.log(
-      `\n${c.bold(r.address)}\n${c.bold('Nonce: ')}${c.yellow(
-        r.nonce.toString()
-      )}\n${c.bold('Transaction: ')}${c.green(
+      `\n${c.bold(generateWalletTitle(r.address))}\n${c.bold(
+        'Nonce: '
+      )}${c.yellow(r.nonce.toString())}\n${c.bold('Transaction: ')}${c.green(
         `${
           process.env.NETWORK === 'mainnet'
             ? 'https://starkscan.co/tx/'

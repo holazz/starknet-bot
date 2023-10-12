@@ -2,7 +2,8 @@ import 'dotenv/config'
 import { Provider as StarknetProvider, constants } from 'starknet'
 import c from 'picocolors'
 import { resolvedWallets } from '../config'
-import { getETHPrice } from '../api'
+import { getETHPrice, getLatestTransaction } from '../api'
+import dayjs from './dayjs'
 import type { Account, Call } from 'starknet'
 
 export function getProvider() {
@@ -14,6 +15,14 @@ export function getProvider() {
           : constants.NetworkName.SN_GOERLI,
     },
   })
+}
+
+export async function getLatestTransactionAge(address: string) {
+  const res = await getLatestTransaction(address)
+  const { timestamp } = res[0]
+  const age = dayjs(timestamp * 1000).fromNow()
+  const color = dayjs().diff(timestamp * 1000, 'day') >= 7 ? c.red : c.green
+  return c.bold(color(age))
 }
 
 export async function estimateGasFee(account: Account, calls: Call | Call[]) {
@@ -28,7 +37,7 @@ export async function sendTransaction(account: Account, calls: Call | Call[]) {
   const nonce = await account.getNonce()
   const res = await account.execute(calls)
   return {
-    address: generateWalletTitle(account.address),
+    address: account.address,
     nonce: Number(nonce),
     tx: res.transaction_hash,
   }
