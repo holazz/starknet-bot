@@ -19,7 +19,7 @@ export function getProvider() {
 
 export async function getLatestTransactionAge(address: string) {
   const res = await getLatestTransaction(address)
-  const { timestamp } = res[0]
+  const { timestamp } = res[0] || { timestamp: 0 }
   const age = dayjs(timestamp * 1000).fromNow()
   const color = dayjs().diff(timestamp * 1000, 'day') >= 7 ? c.red : c.green
   return c.bold(color(age))
@@ -56,7 +56,9 @@ export function shortenAddress(address: string) {
 }
 
 export function generateWalletTitle(address: string) {
-  const wallet = resolvedWallets.find((w) => w.address === address)!
+  const wallet = resolvedWallets.find(
+    (w) => w.address.toLowerCase() === address.toLowerCase()
+  )!
   return `${wallet.label} ${c.dim(`(${shortenAddress(wallet.address)})`)}`
 }
 

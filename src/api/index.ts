@@ -1,6 +1,11 @@
 import axios from 'axios'
 import type { NFTInfo } from '../types'
 
+const STARKSCAN_API_URL =
+  process.env.NETWORK === 'mainnet'
+    ? 'https://api.starkscan.co/api/v0'
+    : 'https://api-testnet.starkscan.co/api/v0'
+
 // export async function getETHPrice() {
 //   const res = await axios.get('https://api.binance.com/api/v3/ticker/price', {
 //     params: {
@@ -21,7 +26,7 @@ export async function getETHPrice() {
 }
 
 export async function getLatestTransaction(address: string) {
-  const res = await axios.get('https://api.starkscan.co/api/v0/transactions', {
+  const res = await axios.get(`${STARKSCAN_API_URL}/transactions`, {
     params: {
       limit: 1,
       contract_address: address,
@@ -35,7 +40,7 @@ export async function getLatestTransaction(address: string) {
 }
 
 export async function getNFTs(address: string): Promise<NFTInfo[]> {
-  const res = await axios.get('https://api.starkscan.co/api/v0/nfts', {
+  const res = await axios.get(`${STARKSCAN_API_URL}/nfts`, {
     params: {
       limit: 100,
       owner_address: address,
