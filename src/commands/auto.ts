@@ -26,13 +26,16 @@ async function generateData() {
     records = (await csv2json(csv)) as Data[]
   }
   const data = resolvedWallets.map((wallet) => {
-    const projects = modules.reduce((acc, cur) => {
-      return {
-        ...acc,
-        [cur.value]:
-          records.find((d) => d.address === wallet.address)?.[cur.value] || 0,
-      }
-    }, {} as Record<string, number>)
+    const projects = modules.reduce(
+      (acc, cur) => {
+        return {
+          ...acc,
+          [cur.value]:
+            records.find((d) => d.address === wallet.address)?.[cur.value] || 0,
+        }
+      },
+      {} as Record<string, number>,
+    )
     return {
       ...wallet,
       ...projects,
@@ -50,7 +53,7 @@ function processData(data: Data) {
   }
   const [max, min] = [getRandomEdge('max'), getRandomEdge('min')]
   const filteredModules = modules.filter(
-    (m) => m.value !== max.value && m.value !== min.value
+    (m) => m.value !== max.value && m.value !== min.value,
   )
   const randomModule = filteredModules.sort(() => Math.random() - 0.5)[0]
   return [data, randomModule.value] as [Data, string]
@@ -103,13 +106,13 @@ async function beforeSubmitTransaction(filteredData: [Data, string][]) {
   let message = ''
   res.forEach((r) => {
     message += `\n${c.bold(generateWalletTitle(r.address))} ${c.dim(
-      '›'
+      '›',
     )} ${c.bold(r.project)} ${c.dim(
-      `(${modules.find((m) => m.value === r.project)?.description})`
+      `(${modules.find((m) => m.value === r.project)?.description})`,
     )} ${c.dim('›')} ${c.yellow(`$${r.fee}`)} ${c.dim('›')} ${r.age}`
   })
   message += `\n\n${c.bold('预估手续费合计:')} ${c.yellow(
-    `$${res.reduce((acc, cur) => acc + cur.fee, 0).toFixed(2)}`
+    `$${res.reduce((acc, cur) => acc + cur.fee, 0).toFixed(2)}`,
   )}`
 
   if (process.env.TRANSACTION_CONFIRM === 'true') {
@@ -156,14 +159,14 @@ export async function run() {
   res.flat().forEach((r) => {
     console.log(
       `\n${c.bold(generateWalletTitle(r.address))}\n${c.bold(
-        'Nonce: '
+        'Nonce: ',
       )}${c.yellow(r.nonce.toString())}\n${c.bold('Transaction: ')}${c.green(
         `${
           process.env.NETWORK === 'mainnet'
             ? 'https://starkscan.co/tx/'
             : 'https://testnet.starkscan.co/tx/'
-        }${r.tx}`
-      )}\n`
+        }${r.tx}`,
+      )}\n`,
     )
   })
 

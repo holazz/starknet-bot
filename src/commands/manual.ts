@@ -15,33 +15,17 @@ import type { Wallet } from '../types'
 async function getConfig() {
   const input = process.argv.slice(2)
 
-  let project = modules.find((m) => m.value === input[0])?.value
-
-  if (project) {
-    console.log(
-      `${c.green('✔')} ${c.bold('请选择交互的项目')} ${c.dim('›')} ${c.bold(
-        modules.find((m) => m.value === input[0])?.title
-      )}`
-    )
-  } else {
-    const { project: p } = await prompts({
-      type: 'select',
-      name: 'project',
-      message: '请选择交互的项目',
-      choices: modules,
-    })
-    project = p
-  }
-
-  let wallets = resolvedWallets.filter((w) =>
-    input[1]?.split(',').includes(w.address)
+  let wallets = resolvedWallets.filter(
+    (w) => input[0]?.split(',').includes(w.address),
   )
 
   if (wallets.length) {
     console.log(
-      `${c.green('✔')} ${c.bold('请选择交互交互的钱包')} ${c.dim('›')} ${c.bold(
-        wallets.map((w) => generateWalletTitle(w.address)).join(', ')
-      )}`
+      `${c.green('✔')} ${c.bold('请选择交互交互的钱包')} ${c.dim(
+        '›',
+      )} ${c.bold(
+        wallets.map((w) => generateWalletTitle(w.address)).join(', '),
+      )}`,
     )
   } else {
     const choices = await Promise.all(
@@ -51,7 +35,7 @@ async function getConfig() {
           title: `${generateWalletTitle(wallet.address)} ${age}`,
           value: wallet,
         }
-      })
+      }),
     )
     const { wallets: w } = await prompts({
       type: 'multiselect',
@@ -63,13 +47,31 @@ async function getConfig() {
     wallets = w
   }
 
-  return { project, wallets }
+  let project = modules.find((m) => m.value === input[1])?.value
+
+  if (project) {
+    console.log(
+      `${c.green('✔')} ${c.bold('请选择交互的项目')} ${c.dim('›')} ${c.bold(
+        modules.find((m) => m.value === input[1])?.title,
+      )}`,
+    )
+  } else {
+    const { project: p } = await prompts({
+      type: 'select',
+      name: 'project',
+      message: '请选择交互的项目',
+      choices: modules,
+    })
+    project = p
+  }
+
+  return { wallets, project }
 }
 
 async function beforeSubmitTransaction(
   provider: Provider,
   wallet: Wallet,
-  calls: Call | Call[]
+  calls: Call | Call[],
 ) {
   const account = new Account(provider, wallet.address, wallet.privateKey)
   const fee = await estimateGasFee(account, calls)
@@ -87,14 +89,14 @@ async function beforeSubmitTransaction(
 }
 
 export async function run() {
-  const { project, wallets } = await getConfig()
+  const { wallets, project } = await getConfig()
   const provider = getProvider()
   const module = modules.find((m) => m.value === project)!
 
   const isSubmit = await beforeSubmitTransaction(
     provider,
     wallets[0],
-    await module.calls(wallets[0].address)
+    await module.calls(wallets[0].address),
   )
 
   if (!isSubmit) return
@@ -109,14 +111,14 @@ export async function run() {
   res.flat().forEach((r) => {
     console.log(
       `\n${c.bold(generateWalletTitle(r.address))}\n${c.bold(
-        'Nonce: '
+        'Nonce: ',
       )}${c.yellow(r.nonce.toString())}\n${c.bold('Transaction: ')}${c.green(
         `${
           process.env.NETWORK === 'mainnet'
             ? 'https://starkscan.co/tx/'
             : 'https://testnet.starkscan.co/tx/'
-        }${r.tx}`
-      )}\n`
+        }${r.tx}`,
+      )}\n`,
     )
   })
 }

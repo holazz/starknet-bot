@@ -59,7 +59,7 @@ export async function waitForTransactionReceipt(txHash: string) {
       params: {
         transactionHash: txHash,
       },
-    }
+    },
   )
   let { status } = res.data
   while (status !== 'ACCEPTED_ON_L2') {
@@ -69,7 +69,7 @@ export async function waitForTransactionReceipt(txHash: string) {
         params: {
           transactionHash: txHash,
         },
-      }
+      },
     )
     status = res.data.status
   }

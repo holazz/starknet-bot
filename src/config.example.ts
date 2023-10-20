@@ -8,6 +8,6 @@ export const wallets: Wallet[] = [
 ]
 
 export const resolvedWallets: Wallet[] = wallets.map((wallet, index) => ({
-  label: wallet.label || `Account ${index + 1}`,
+  label: `Account ${index + 1}`,
   ...wallet,
 }))

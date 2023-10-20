@@ -57,7 +57,7 @@ export function shortenAddress(address: string) {
 
 export function generateWalletTitle(address: string) {
   const wallet = resolvedWallets.find(
-    (w) => w.address.toLowerCase() === address.toLowerCase()
+    (w) => w.address.toLowerCase() === address.toLowerCase(),
   )!
   return `${wallet.label} ${c.dim(`(${shortenAddress(wallet.address)})`)}`
 }
@@ -65,7 +65,7 @@ export function generateWalletTitle(address: string) {
 export function retry<T>(
   fn: (...args: any[]) => Promise<T>,
   times = 0,
-  delay = 0
+  delay = 0,
 ) {
   return (...args: any[]): Promise<T> =>
     new Promise((resolve, reject) => {
