@@ -9,14 +9,14 @@ import {
 } from '../utils'
 import { resolvedWallets } from '../config'
 import modules from '../modules'
-import type { Call, Provider } from 'starknet'
+import type { Call, RpcProvider } from 'starknet'
 import type { Wallet } from '../types'
 
 async function getConfig() {
   const input = process.argv.slice(2)
 
-  let wallets = resolvedWallets.filter(
-    (w) => input[0]?.split(',').includes(w.address),
+  let wallets = resolvedWallets.filter((w) =>
+    input[0]?.split(',').includes(w.address),
   )
 
   if (wallets.length) {
@@ -69,7 +69,7 @@ async function getConfig() {
 }
 
 async function beforeSubmitTransaction(
-  provider: Provider,
+  provider: RpcProvider,
   wallet: Wallet,
   calls: Call | Call[],
 ) {

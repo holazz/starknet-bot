@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { Provider as StarknetProvider, constants } from 'starknet'
+import { RpcProvider } from 'starknet'
 import c from 'picocolors'
 import { resolvedWallets } from '../config'
 import { getETHPrice, getLatestTransaction } from '../api'
@@ -7,13 +7,11 @@ import dayjs from './dayjs'
 import type { Account, Call } from 'starknet'
 
 export function getProvider() {
-  return new StarknetProvider({
-    sequencer: {
-      network:
-        process.env.NETWORK === 'mainnet'
-          ? constants.NetworkName.SN_MAIN
-          : constants.NetworkName.SN_GOERLI,
-    },
+  return new RpcProvider({
+    nodeUrl:
+      process.env.NETWORK === 'mainnet'
+        ? 'https://starknet-mainnet.public.blastapi.io'
+        : 'https://starknet-testnet.public.blastapi.io',
   })
 }
 
